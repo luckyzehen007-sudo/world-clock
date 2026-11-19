@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10131d">
+  <title>World Clock</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; padding: 28px 16px 48px; color: #f4f6ff; background: radial-gradient(ellipse at top, #26355b 0, #10131d 58%); }
+    main { width: min(940px, 100%); margin: 0 auto; }
+    header { text-align: center; margin: 12px 0 26px; }
+    h1 { margin: 0; font-size: clamp(2rem, 8vw, 3.3rem); letter-spacing: -.04em; }
+    header p { color: #b7c3df; margin: 8px 0 0; }
+    .toolbar { display: flex; justify-content: center; gap: 10px; margin-bottom: 22px; }
+    button { font: inherit; color: #fff; background: #39466a; border: 1px solid #63739b; border-radius: 12px; padding: 10px 15px; cursor: pointer; }
+    button:hover { background: #4a5b88; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 255px), 1fr)); gap: 15px; }
+    .card { position: relative; overflow: hidden; padding: 22px 18px; border: 1px solid #39445f; border-radius: 18px; background: #171d2bcc; box-shadow: 0 14px 36px #0004; }
+    .city { color: #a9c5ff; font-weight: 650; font-size: 1.05rem; }
+    .zone { color: #98a4bd; font-size: .78rem; margin-top: 3px; }
+    .time { margin: 16px 0 8px; font: 600 clamp(2rem, 9vw, 2.8rem)/1.1 ui-monospace, monospace; letter-spacing: -.06em; white-space: nowrap; }
+    .date { color: #c4cce0; font-size: .9rem; }
+    footer { margin-top: 22px; text-align: center; color: #98a4bd; font-size: .85rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <header><h1>World Clock</h1><p>Current time around the world</p></header>
+    <div class="toolbar"><button id="format" type="button">Use 24-hour time</button></div>
+    <section class="grid" id="clocks" aria-label="World clocks"></section>
+    <footer>Times update every second using your device clock.</footer>
+  </main>
+  <script>
+    const places = [
+      { city: 'New Delhi', zone: 'Asia/Kolkata' },
+      { city: 'London', zone: 'Europe/London' },
+      { city: 'New York', zone: 'America/New_York' },
+      { city: 'Tokyo', zone: 'Asia/Tokyo' },
+      { city: 'Dubai', zone: 'Asia/Dubai' },
+      { city: 'Sydney', zone: 'Australia/Sydney' }
+    ];
+    let hour12 = true;
+    const clocks = document.querySelector('#clocks');
+    const safeId = zone => zone.replace(/[^a-z0-9]/gi, '-');
+    for (const place of places) {
+      const id = safeId(place.zone);
+      const card = document.createElement('article');
+      card.className = 'card';
+      card.innerHTML = `<div class="city">${place.city}</div><div class="zone">${place.zone}</div><div class="time" id="time-${id}"></div><div class="date" id="date-${id}"></div>`;
+      clocks.append(card);
+    }
+    function update() {
+      const now = new Date();
+      for (const { zone } of places) {
+        const id = safeId(zone);
+        document.querySelector(`#time-${id}`).textContent = new Intl.DateTimeFormat(undefined, {
+          timeZone: zone, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12
+        }).format(now);
+        document.querySelector(`#date-${id}`).textContent = new Intl.DateTimeFormat(undefined, {
+          timeZone: zone, weekday: 'long', year: 'numeric', month: 'short', day: 'numeric'
+        }).format(now);
+      }
+    }
+    document.querySelector('#format').addEventListener('click', event => {
+      hour12 = !hour12;
+      event.currentTarget.textContent = hour12 ? 'Use 24-hour time' : 'Use 12-hour time';
+      update();
+    });
+    update();
+    setInterval(update, 1000);
+  </script>
+</body>
+</html>
